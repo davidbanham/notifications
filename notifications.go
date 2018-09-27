@@ -12,10 +12,15 @@ import (
 
 var svc *ses.SES
 var testMode bool
+var debugLogging bool
 
 func init() {
 	if os.Getenv("TEST_MOCKS_ON") == "true" {
 		testMode = true
+		return
+	}
+	if os.Getenv("NOTIFICATIONS_LOG_LEVEL") == "debug" {
+		debugLogging = true
 		return
 	}
 	required_env.Ensure(map[string]string{
@@ -41,6 +46,9 @@ type Email struct {
 }
 
 func SendEmail(email Email) (err error) {
+	if debugLogging {
+		log.Printf("DEBUG notifications email: %+v \n", email)
+	}
 	if testMode {
 		log.Println("INFO notifications TESTMODE dropping email to", email.To, "from", email.From)
 		return
