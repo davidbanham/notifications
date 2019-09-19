@@ -82,10 +82,14 @@ func SendEmail(email Email) (err error) {
 			},
 		},
 		Source: aws.String(email.From),
-		ReplyToAddresses: []*string{
-			aws.String(email.ReplyTo),
-		},
 	}
+
+	if email.ReplyTo != "" {
+		params.ReplyToAddresses = []*string{
+			aws.String(email.ReplyTo),
+		}
+	}
+
 	_, err = svc.SendEmail(params)
 
 	return
