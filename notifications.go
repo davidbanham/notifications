@@ -21,7 +21,6 @@ func init() {
 	}
 	if os.Getenv("NOTIFICATIONS_LOG_LEVEL") == "debug" {
 		debugLogging = true
-		return
 	}
 	required_env.Ensure(map[string]string{
 		"AWS_ACCESS_KEY_ID":     "",
