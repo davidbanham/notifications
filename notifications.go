@@ -95,9 +95,9 @@ func SendEmail(email Email) (err error) {
 	return
 }
 
-func SendRawEmail(data []byte, from string) error {
+func SendRawEmail(data []byte) error {
 	input := &ses.SendRawEmailInput{
-		FromArn: aws.String(from),
+		FromArn: aws.String(""),
 		RawMessage: &ses.RawMessage{
 			Data: data,
 		},
