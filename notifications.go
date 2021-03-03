@@ -1,8 +1,11 @@
 package notifications
 
 import (
+	"bytes"
+	"io"
 	"log"
 	"os"
+	"text/template"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -13,6 +16,8 @@ import (
 var svc *ses.SES
 var testMode bool
 var debugLogging bool
+var tmpl *template.Template
+var attachmentTmpl *template.Template
 
 func init() {
 	if os.Getenv("TEST_MOCKS_ON") == "true" {
@@ -26,6 +31,51 @@ func init() {
 		"AWS_ACCESS_KEY_ID":     "",
 		"AWS_SECRET_ACCESS_KEY": "",
 	})
+
+	var err error
+	tmpl, err = template.New("email").Parse(`To: {{.To}}
+From: {{.From}}
+Subject: {{.Subject}}
+MIME-Version: 1.0
+Content-type: multipart/mixed;
+	boundary="NextPart"
+
+--NextPart
+Content-type: multipart/alternative;
+	boundary="AlternativePart"
+
+{{ if .Text }}
+--AlternativePart
+Content-Type: text/plain
+
+{{.Text}}
+
+{{ end}}
+{{ if .HTML }}
+--AlternativePart
+Content-Type: text/html
+
+{{.HTML}}
+
+{{ end }}
+--AlternativePart--
+`)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	attachmentTmpl, err = template.New("attachment").Parse(`--NextPart
+Content-Type: {{.ContentType}};
+Content-Disposition: attachment;
+	filename="{{.Filename}}"
+
+`)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1"),
 	})
@@ -36,66 +86,60 @@ func init() {
 }
 
 type Email struct {
-	To      string
-	From    string
-	ReplyTo string
-	Text    string
-	HTML    string
-	Subject string
+	To          string
+	From        string
+	ReplyTo     string
+	Text        string
+	HTML        string
+	Subject     string
+	Attachments []Attachment
 }
 
-func SendEmail(email Email) (err error) {
+type Attachment struct {
+	ContentType string
+	Data        io.Reader
+	Filename    string
+}
+
+func (attachment Attachment) execute(data io.Writer) error {
+	if err := attachmentTmpl.Execute(data, attachment); err != nil {
+		return err
+	}
+	_, err := io.Copy(data, attachment.Data)
+	return err
+}
+
+func SendEmail(email Email) error {
 	if debugLogging {
 		log.Printf("DEBUG notifications email: %+v \n", email)
 	}
 	if testMode {
 		log.Println("INFO notifications TESTMODE dropping email to", email.To, "from", email.From)
-		return
+		return nil
 	}
 	log.Println("INFO notifications sending email to", email.To, "from", email.From)
 
-	body := &ses.Body{
-		Text: &ses.Content{
-			Data:    aws.String(email.Text),
-			Charset: aws.String("UTF8"),
-		},
+	data := bytes.Buffer{}
+
+	if err := tmpl.Execute(&data, email); err != nil {
+		return err
 	}
 
-	if email.HTML != "" {
-		body.Html = &ses.Content{
-			Data:    aws.String(email.HTML),
-			Charset: aws.String("UTF8"),
+	for _, attachment := range email.Attachments {
+		if err := attachment.execute(&data); err != nil {
+			return nil
 		}
 	}
 
-	params := &ses.SendEmailInput{
-		Destination: &ses.Destination{
-			ToAddresses: []*string{
-				aws.String(email.To),
-			},
-		},
-		Message: &ses.Message{
-			Body: body,
-			Subject: &ses.Content{
-				Data:    aws.String(email.Subject),
-				Charset: aws.String("UTF8"),
-			},
-		},
-		Source: aws.String(email.From),
-	}
-
-	if email.ReplyTo != "" {
-		params.ReplyToAddresses = []*string{
-			aws.String(email.ReplyTo),
-		}
-	}
-
-	_, err = svc.SendEmail(params)
-
-	return
+	return SendRawEmail(data.Bytes())
 }
 
 func SendRawEmail(data []byte) error {
+	if testMode {
+		log.Println("INFO notifications TESTMODE dropping raw email")
+		return nil
+	}
+
 	input := &ses.SendRawEmailInput{
 		RawMessage: &ses.RawMessage{
 			Data: data,
