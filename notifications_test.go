@@ -13,7 +13,7 @@ func TestNotificationsLive(t *testing.T) {
 	err := SendEmail(Email{
 		To:      "david@banham.id.au",
 		From:    "testrun@takehome.io",
-		ReplyTo: "lolwut@takehome.io",
+		ReplyTo: "totallynotarealaddress@example.com",
 		Text:    "this is the text part of a test run",
 		HTML:    "this <i>is the HTML part of a test</i> run",
 		Subject: "test run",

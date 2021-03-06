@@ -37,8 +37,7 @@ func init() {
 	var err error
 	tmpl, err = template.New("email").Parse(`From: {{.From}}
 To: {{.To}}
-{{ if .ReplyTo }}Reply-To: {{.ReplyTo}}
-Sender: {{.ReplyTo}}{{ end }}
+{{ if .ReplyTo }}Reply-To: {{.ReplyTo}}{{ end }}
 Subject: {{.Subject}}
 MIME-Version: 1.0
 Content-type: multipart/mixed;
