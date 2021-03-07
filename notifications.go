@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/davidbanham/mailyak/v3"
 	"github.com/davidbanham/required_env"
 )
 
@@ -33,51 +34,6 @@ func init() {
 		"AWS_ACCESS_KEY_ID":     "",
 		"AWS_SECRET_ACCESS_KEY": "",
 	})
-
-	var err error
-	tmpl, err = template.New("email").Parse(`From: {{.From}}
-To: {{.To}}
-{{ if .ReplyTo }}Reply-To: {{.ReplyTo}}{{ end }}
-Subject: {{.Subject}}
-MIME-Version: 1.0
-Content-type: multipart/mixed;
-	boundary="NextPart"
-
---NextPart
-Content-type: multipart/alternative;
-	boundary="AlternativePart"
-
-{{ if .Text }}
---AlternativePart
-Content-Type: text/plain
-
-{{.Text}}
-
-{{ end}}
-{{ if .HTML }}
---AlternativePart
-Content-Type: text/html
-
-{{.HTML}}
-
-{{ end }}
---AlternativePart--
-`)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	attachmentTmpl, err = template.New("attachment").Parse(`--NextPart
-Content-Type: {{.ContentType}};
-Content-Disposition: attachment;
-	filename="{{.Filename}}"
-
-`)
-
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1"),
@@ -102,14 +58,6 @@ type Attachment struct {
 	ContentType string
 	Data        io.Reader
 	Filename    string
-}
-
-func (attachment Attachment) execute(data io.Writer) error {
-	if err := attachmentTmpl.Execute(data, attachment); err != nil {
-		return err
-	}
-	_, err := io.Copy(data, attachment.Data)
-	return err
 }
 
 func (attachment *Attachment) MarshalJSON() ([]byte, error) {
@@ -157,19 +105,29 @@ func SendEmail(email Email) error {
 	}
 	log.Println("INFO notifications sending email to", email.To, "from", email.From)
 
-	data := bytes.Buffer{}
+	yak := mailyak.New("", nil)
 
-	if err := tmpl.Execute(&data, email); err != nil {
-		return err
+	yak.To(email.To)
+	yak.From(email.From)
+	yak.ReplyTo(email.ReplyTo)
+	yak.Subject(email.Subject)
+	if email.HTML != "" {
+		yak.HTML().Set(email.HTML)
+	}
+	if email.Text != "" {
+		yak.Plain().Set(email.Text)
 	}
 
 	for _, attachment := range email.Attachments {
-		if err := attachment.execute(&data); err != nil {
-			return nil
-		}
+		yak.AttachWithMimeType(attachment.Filename, attachment.Data, attachment.ContentType)
 	}
 
-	return SendRawEmail(data.Bytes())
+	buf, err := yak.MimeBuf()
+	if err != nil {
+		return err
+	}
+
+	return SendRawEmail(buf.Bytes())
 }
 
 func SendRawEmail(data []byte) error {
