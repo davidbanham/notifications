@@ -34,51 +34,6 @@ func init() {
 		"AWS_SECRET_ACCESS_KEY": "",
 	})
 
-	var err error
-	tmpl, err = template.New("email").Parse(`From: {{.From}}
-To: {{.To}}
-{{ if .ReplyTo }}Reply-To: {{.ReplyTo}}{{ end }}
-Subject: {{.Subject}}
-MIME-Version: 1.0
-Content-type: multipart/mixed;
-	boundary="NextPart"
-
---NextPart
-Content-type: multipart/alternative;
-	boundary="AlternativePart"
-
-{{ if .Text }}
---AlternativePart
-Content-Type: text/plain
-
-{{.Text}}
-
-{{ end}}
-{{ if .HTML }}
---AlternativePart
-Content-Type: text/html
-
-{{.HTML}}
-
-{{ end }}
---AlternativePart--
-`)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	attachmentTmpl, err = template.New("attachment").Parse(`--NextPart
-Content-Type: {{.ContentType}};
-Content-Disposition: attachment;
-	filename="{{.Filename}}"
-
-`)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1"),
 	})
@@ -157,19 +112,13 @@ func SendEmail(email Email) error {
 	}
 	log.Println("INFO notifications sending email to", email.To, "from", email.From)
 
-	data := bytes.Buffer{}
+	mime, err := email.toMIME()
 
-	if err := tmpl.Execute(&data, email); err != nil {
+	if err != nil {
 		return err
 	}
 
-	for _, attachment := range email.Attachments {
-		if err := attachment.execute(&data); err != nil {
-			return nil
-		}
-	}
-
-	return SendRawEmail(data.Bytes())
+	return SendRawEmail(mime)
 }
 
 func SendRawEmail(data []byte) error {
