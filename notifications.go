@@ -1,10 +1,6 @@
 package notifications
 
 import (
-	"bytes"
-	"encoding/json"
-	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"text/template"
@@ -12,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/davidbanham/marcel"
 	"github.com/davidbanham/required_env"
 )
 
@@ -43,64 +40,9 @@ func init() {
 	svc = ses.New(sess)
 }
 
-type Email struct {
-	To          string
-	From        string
-	ReplyTo     string
-	Text        string
-	HTML        string
-	Subject     string
-	Attachments []Attachment
-}
+type Email = marcel.Email
 
-type Attachment struct {
-	ContentType string
-	Data        io.Reader
-	Filename    string
-}
-
-func (attachment Attachment) execute(data io.Writer) error {
-	if err := attachmentTmpl.Execute(data, attachment); err != nil {
-		return err
-	}
-	_, err := io.Copy(data, attachment.Data)
-	return err
-}
-
-func (attachment *Attachment) MarshalJSON() ([]byte, error) {
-	data, err := ioutil.ReadAll(attachment.Data)
-	if err != nil {
-		return []byte{}, err
-	}
-
-	return json.Marshal(&struct {
-		ContentType string `json:"content_type"`
-		Data        []byte `json:"data"`
-		Filename    string `json:"filename"`
-	}{
-		ContentType: attachment.ContentType,
-		Data:        data,
-		Filename:    attachment.Filename,
-	})
-}
-
-func (attachment *Attachment) UnmarshalJSON(data []byte) error {
-	inner := struct {
-		ContentType string `json:"content_type"`
-		Data        []byte `json:"data"`
-		Filename    string `json:"filename"`
-	}{}
-
-	if err := json.Unmarshal(data, &inner); err != nil {
-		return err
-	}
-
-	attachment.ContentType = inner.ContentType
-	attachment.Filename = inner.Filename
-	attachment.Data = bytes.NewReader(inner.Data)
-
-	return nil
-}
+type Attachment = marcel.Attachment
 
 func SendEmail(email Email) error {
 	if debugLogging {
@@ -112,7 +54,7 @@ func SendEmail(email Email) error {
 	}
 	log.Println("INFO notifications sending email to", email.To, "from", email.From)
 
-	mime, err := email.toMIME()
+	mime, err := email.ToMIME()
 
 	if err != nil {
 		return err

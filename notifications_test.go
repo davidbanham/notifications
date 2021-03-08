@@ -27,7 +27,7 @@ func TestNotificationsLive(t *testing.T) {
 		ReplyTo: "totallynotarealaddress@example.com",
 		Text:    "this is the text part of a test run",
 		HTML:    "this <i>is the HTML part of a test</i> run",
-		Subject: "test run",
+		Subject: "Simple Test Run",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -40,7 +40,7 @@ func TestNotificationsLiveHTMLOnly(t *testing.T) {
 		From:    "testrun@takehome.io",
 		ReplyTo: "lolwut@takehome.io",
 		HTML:    "this <i>is the HTML, and only, part of a test</i> run",
-		Subject: "test run",
+		Subject: "HTML Only Test Run",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -53,7 +53,7 @@ func TestNotificationsLiveTextOnly(t *testing.T) {
 		From:    "testrun@takehome.io",
 		ReplyTo: "lolwut@takehome.io",
 		Text:    "this is the text, and only, part of a test run",
-		Subject: "test run",
+		Subject: "Text Only Test Run",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -83,7 +83,7 @@ even,"when there are",spaces`)
 		ReplyTo: "lolwut@takehome.io",
 		Text:    "this is the text part of a test run",
 		HTML:    "this <i>is the HTML part of a test</i> run",
-		Subject: "test run",
+		Subject: "Attachments Test Run",
 		Attachments: []Attachment{
 			Attachment{
 				ContentType: "text/plain",
@@ -126,7 +126,7 @@ func TestJSONMarshalAndUnmarshal(t *testing.T) {
 		ReplyTo: "lolwut@takehome.io",
 		Text:    "this is the text part of a test run",
 		HTML:    "this <i>is the HTML part of a test</i> run",
-		Subject: "test run",
+		Subject: "JSON Test Run",
 		Attachments: []Attachment{
 			Attachment{
 				ContentType: "text/plain",
