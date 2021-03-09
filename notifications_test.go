@@ -7,27 +7,30 @@ import (
 	"strings"
 	"testing"
 
+	bandname "github.com/davidbanham/bandname_go"
 	"github.com/davidbanham/required_env"
 	"github.com/stretchr/testify/assert"
 )
 
 var TO_ADDRESS string
+var runID string
 
 func init() {
 	required_env.Ensure(map[string]string{
 		"TO_ADDRESS": "",
 	})
 	TO_ADDRESS = os.Getenv("TO_ADDRESS")
+	runID = bandname.Bandname()
 }
 
-func TestNotificationsLive(t *testing.T) {
+func TestNotificationsLiveSimple(t *testing.T) {
 	err := SendEmail(Email{
 		To:      TO_ADDRESS,
 		From:    "testrun@takehome.io",
 		ReplyTo: "totallynotarealaddress@example.com",
 		Text:    "this is the text part of a test run",
 		HTML:    "this <i>is the HTML part of a test</i> run",
-		Subject: "Simple Test Run",
+		Subject: "Simple Test Run" + runID,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -40,7 +43,7 @@ func TestNotificationsLiveHTMLOnly(t *testing.T) {
 		From:    "testrun@takehome.io",
 		ReplyTo: "lolwut@takehome.io",
 		HTML:    "this <i>is the HTML, and only, part of a test</i> run",
-		Subject: "HTML Only Test Run",
+		Subject: "HTML Only Test Run" + runID,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -53,7 +56,7 @@ func TestNotificationsLiveTextOnly(t *testing.T) {
 		From:    "testrun@takehome.io",
 		ReplyTo: "lolwut@takehome.io",
 		Text:    "this is the text, and only, part of a test run",
-		Subject: "Text Only Test Run",
+		Subject: "Text Only Test Run" + runID,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -83,7 +86,7 @@ even,"when there are",spaces`)
 		ReplyTo: "lolwut@takehome.io",
 		Text:    "this is the text part of a test run",
 		HTML:    "this <i>is the HTML part of a test</i> run",
-		Subject: "Attachments Test Run",
+		Subject: "Attachments Test Run" + runID,
 		Attachments: []Attachment{
 			Attachment{
 				ContentType: "text/plain",
@@ -126,7 +129,7 @@ func TestJSONMarshalAndUnmarshal(t *testing.T) {
 		ReplyTo: "lolwut@takehome.io",
 		Text:    "this is the text part of a test run",
 		HTML:    "this <i>is the HTML part of a test</i> run",
-		Subject: "JSON Test Run",
+		Subject: "JSON Test Run" + runID,
 		Attachments: []Attachment{
 			Attachment{
 				ContentType: "text/plain",
