@@ -37,6 +37,20 @@ func TestNotificationsLiveSimple(t *testing.T) {
 	}
 }
 
+func TestNotificationsLiveFancy(t *testing.T) {
+	err := SendEmail(Email{
+		To:      TO_ADDRESS,
+		From:    "testrun@takehome.io",
+		ReplyTo: "totallynotarealaddress@example.com",
+		Text:    "this is the text part of a test run",
+		HTML:    "this <i>is the <b>HTML</b> part of a test</i> run. And it has LINKS <a href=\"https://google.com\">https://google.com</a>",
+		Subject: "Fancy Test Run" + runID,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestNotificationsLiveHTMLOnly(t *testing.T) {
 	err := SendEmail(Email{
 		To:      TO_ADDRESS,
