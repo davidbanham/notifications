@@ -16,6 +16,8 @@ github.com/davidbanham/marcel v0.0.8 h1:CdnuH5zBVgZXolTGuaNmwKSeX9XHzRufIkERrwrb
 github.com/davidbanham/marcel v0.0.8/go.mod h1:/R3ZujeZepkWIvcC13X/Va0l2yhl3xYZIL61GHZ1C/Y=
 github.com/davidbanham/marcel v0.0.9 h1:i+hl77CI7Ex0Zhnm5ncnq/+pfI7poLlCBNsMjErospA=
 github.com/davidbanham/marcel v0.0.9/go.mod h1:/R3ZujeZepkWIvcC13X/Va0l2yhl3xYZIL61GHZ1C/Y=
+github.com/davidbanham/marcel v0.0.10 h1:roqAZ0juF8X7C5UxjPOxFUt4v8D0wLTIkq6G2VFMGiw=
+github.com/davidbanham/marcel v0.0.10/go.mod h1:/R3ZujeZepkWIvcC13X/Va0l2yhl3xYZIL61GHZ1C/Y=
 github.com/davidbanham/required_env v0.0.0-20150902120453-a84628a4c244 h1:FgQ8KQ99RjcMqaTSqmdisj2quuDKlL1x62SoRtZQwqw=
 github.com/davidbanham/required_env v0.0.0-20150902120453-a84628a4c244/go.mod h1:zJVA+kv43obXkwVzNtnVJK9rIUvzRtV+rSe1qXyf4xk=
 github.com/dustinkirkland/golang-petname v0.0.0-20191129215211-8e5a1ed0cff0 h1:90Ly+6UfUypEF6vvvW5rQIv9opIL8CbmW9FT20LDQoY=

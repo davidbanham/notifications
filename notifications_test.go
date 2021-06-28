@@ -2,6 +2,7 @@ package notifications
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -85,6 +86,36 @@ func TestNotificationsLiveNonASCIISubject(t *testing.T) {
 		Text:    "this is the text part of a test run",
 		HTML:    "this is the <b>HTML</b> part of a test run",
 		Subject: "Non-ASCII subject - “–“ - test run" + runID,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestNotificationsLiveLongSubjectWithNonASCII(t *testing.T) {
+	longSubject := fmt.Sprintf(runID + "Long with non-ASCII - “–“ - test This is a seriously long subject line I mean it is just silly what a ridiculous length of string to put in a subject who would do a think like this it is a bloody outrage do you not know that the maximum length of a MIME header is 75 characters and there's all sorts of nonsense we need to do in order to support multiline headers in combination with encoded words so that non-ASCII characters are supported I mean have you even read rfc2047 20 times?")
+	err := SendEmail(Email{
+		To:      TO_ADDRESS,
+		From:    "testrun@takehome.io",
+		ReplyTo: "lolwut@takehome.io",
+		Text:    "this is the text part of a test run",
+		HTML:    "this is the <b>HTML</b> part of a test run",
+		Subject: longSubject,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestNotificationsLiveLongSubject(t *testing.T) {
+	longSubject := fmt.Sprintf("This is a seriously long subject line I mean it is just silly what a ridiculous length of string to put in a subject who would do a think like this it is a bloody outrage do you not know that the maximum length of a MIME header is 75 characters and there's all sorts of nonsense we need to do in order to support multiline headers in combination with encoded words so that non-ASCII characters are supported I mean have you even read rfc2047 20 times?")
+	err := SendEmail(Email{
+		To:      TO_ADDRESS,
+		From:    "testrun@takehome.io",
+		ReplyTo: "lolwut@takehome.io",
+		Text:    "this is the text part of a test run",
+		HTML:    "this is the <b>HTML</b> part of a test run",
+		Subject: longSubject,
 	})
 	if err != nil {
 		t.Fatal(err)
