@@ -77,6 +77,20 @@ func TestNotificationsLiveTextOnly(t *testing.T) {
 	}
 }
 
+func TestNotificationsLiveNonASCIISubject(t *testing.T) {
+	err := SendEmail(Email{
+		To:      TO_ADDRESS,
+		From:    "testrun@takehome.io",
+		ReplyTo: "lolwut@takehome.io",
+		Text:    "this is the text part of a test run",
+		HTML:    "this is the <b>HTML</b> part of a test run",
+		Subject: "Non-ASCII subject - “–“ - test run" + runID,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestNotificationsWithAttachmentsLive(t *testing.T) {
 	data := strings.NewReader("oh hi I am an attachment")
 	moreData := strings.NewReader("oh hi I am another totally different attachment")
