@@ -93,7 +93,7 @@ func TestNotificationsLiveNonASCIISubject(t *testing.T) {
 }
 
 func TestNotificationsLiveLongSubjectWithNonASCII(t *testing.T) {
-	longSubject := fmt.Sprintf(runID + "Long with non-ASCII - “–“ - test This is a seriously long subject line I mean it is just silly what a ridiculous length of string to put in a subject who would do a think like this it is a bloody outrage do you not know that the maximum length of a MIME header is 75 characters and there's all sorts of nonsense we need to do in order to support multiline headers in combination with encoded words so that non-ASCII characters are supported I mean have you even read rfc2047 20 times?")
+	longSubject := fmt.Sprintf(runID + "Long with non-ASCII - “–“ - test 👩‍🏫 This is a seriously long subject line I mean it is just silly what a ridiculous length of string to put in a subject who would do a think like this it is a bloody outrage do you not know that the maximum length of a MIME header is 75 characters and there's all sorts of nonsense we need to do in order to support multiline headers in combination with encoded words so that non-ASCII characters are supported I mean have you even read rfc2047 20 times?")
 	err := SendEmail(Email{
 		To:      TO_ADDRESS,
 		From:    "testrun@takehome.io",
